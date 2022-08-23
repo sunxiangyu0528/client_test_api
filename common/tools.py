@@ -18,6 +18,9 @@ class Check:
         if self.ex_name == "OKX":
             self.ex_asks = self.exchange[0]["asks"]
             self.ex_bids = self.exchange[0]["bids"]
+        elif self.ex_name == "BN":
+            self.ex_asks = self.exchange["a"]
+            self.ex_bids = self.exchange["b"]
 
     def _diff(self, n1, n2):
         size1, size2 = len(n1), len(n2)
@@ -43,7 +46,10 @@ class Check:
 
     def is_equals(self, ltp, exchange):
         self.ltp = ltp.get("data")
-        self.exchange = exchange.get("data")
+        if self.ex_name == "BN":
+            self.exchange = exchange
+        else:
+            self.exchange = exchange.get("data")
         self._parse_data()
 
         res1 = self._diff(self.ltp_asks, self.ex_asks)

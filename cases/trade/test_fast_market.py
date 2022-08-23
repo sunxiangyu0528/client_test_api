@@ -4,20 +4,19 @@ import numpy
 import pytest
 
 from common.tools import Check
-from exchange.ltp import LTP
-from exchange.okx import OKX
+from exchange.exchange import LTP, OKX, BN
 
 
 def test_okx_01():
     """
     author: alex
     logic: 校验极速行情获取的数据和交易所获取的数据的延时
-    exception: 延时为
+    exception: 延时
     """
     dq1 = list()
     dq2 = list()
-    ltp = LTP(share_dq=dq1)
-    okx = OKX(share_dq=dq2)
+    ltp = LTP(exchange="1001", symbol="BTC_USDT", share_dq=dq1)
+    okx = OKX(symbol="BTC_USDT", share_dq=dq2)
     okx.start()
     time.sleep(1)
     ltp.start()
@@ -51,20 +50,101 @@ def test_okx_01():
     assert numpy.median(ans) <= 3
 
 
-# @pytest.mark.parametrize('n', 100)
-def test_okx_02():
+@pytest.mark.parametrize('n', [100])
+@pytest.mark.MANUAL
+def test_okx_02(n):
     """
-    并发在线用户数 n 个
-    :return:
+    author: alex
+    logic: 并发订阅，观察稳定性
+    exception:
     """
-    for i in range(5):
-        LTP().start()
+    for i in range(n):
+        LTP(exchange="1000", symbol="BTC_USDT").start()
 
     while 1:
         pass
 
 
-def test_okx_03():
+@pytest.mark.parametrize(['exchange', "symbol"], [("1001", "BTC_USDT"), ("1001", "ETH_USDT")])
+def test_okx_03(exchange, symbol):
+    """
+    author：alex
+    logic：校验 OKX 500组数据正确性
     """
 
+    dq1 = list()
+    dq2 = list()
+    ltp = LTP(exchange=exchange, symbol=symbol, share_dq=dq1)
+    okx = OKX(symbol=symbol, share_dq=dq2)
+    okx.start()
+    time.sleep(1)
+    ltp.start()
+
+    while not dq1:
+        print("ltp no data...")
+        time.sleep(0.5)
+
+    ltp_data = dq1.pop(0)
+    okx_data = dq2.pop(0)
+    check = Check(ex_name="OKX")
+    while True:
+        if check.is_equals(ltp_data, okx_data):
+            break
+        okx_data = dq2.pop(0)
+
+    times = 500
+    while times > 0:
+        if dq2 and dq1:
+            okx_data = dq2.pop(0)
+            ltp_data = dq1.pop(0)
+            print(f"=========start==========")
+            print(f"ltp: {ltp_data}")
+            print(f"okx: {okx_data}")
+            print(f"=========end============")
+            assert check.is_equals(ltp_data, okx_data)
+            times -= 1
+
+
+@pytest.mark.parametrize(['exchange', "symbol"], [("1000", "BTC_USDT"), ("1000", "ETH_USDT")])
+def test_bn_01(exchange, symbol):
     """
+    author: alex
+    logic: 校验binance 500组数据正确性
+    """
+
+    dq1 = list()
+    dq2 = list()
+    ltp = LTP(exchange=exchange, symbol=symbol, share_dq=dq1)
+    bn = BN(symbol=symbol, share_dq=dq2)
+    bn.start()
+    time.sleep(1)
+    ltp.start()
+
+    while not dq1:
+        print("ltp no data...")
+        time.sleep(0.5)
+    while not dq2:
+        print("ex no data...")
+        time.sleep(0.5)
+
+    ltp_data = dq1.pop(0)
+    okx_data = dq2.pop(0)
+    check = Check(ex_name="BN")
+    while True:
+        if check.is_equals(ltp_data, okx_data):
+            break
+        okx_data = dq2.pop(0)
+
+    times = 500
+    while times > 0:
+        if dq2 and dq1:
+            okx_data = dq2.pop(0)
+            ltp_data = dq1.pop(0)
+            # print(f"=========start==========")
+            # print(f"ltp: {ltp_data}")
+            # print(f"okx: {okx_data}")
+            # print(f"=========end============")
+            assert check.is_equals(ltp_data, okx_data)
+            times -= 1
+        else:
+            time.sleep(0.5)
