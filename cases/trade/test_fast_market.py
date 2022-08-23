@@ -33,9 +33,9 @@ def test_okx_01():
             break
         okx_data = dq2.pop(0)
 
-    count = 0
+    times = 500
     ans = []
-    while count < 100:
+    while times > 0:
         if dq2 and dq1:
             res = ltp_data['data']["timestamp"] - int(okx_data['data'][0]["ts"])
             # res = (ltp_data["get_ts"] - okx_data["get_ts"]) * 1000
@@ -46,12 +46,12 @@ def test_okx_01():
             print(f"=========end============")
             okx_data = dq2.pop(0)
             ltp_data = dq1.pop(0)
-            count += 1
+            times -= 1
     assert numpy.median(ans) <= 3
 
 
-@pytest.mark.parametrize('n', [100])
-@pytest.mark.MANUAL
+@pytest.mark.parametrize('n', [4])
+@pytest.mark.tags("manual")
 def test_okx_02(n):
     """
     author: alex
@@ -59,9 +59,10 @@ def test_okx_02(n):
     exception:
     """
     for i in range(n):
-        LTP(exchange="1000", symbol="BTC_USDT").start()
+        LTP(exchange="1000", symbol="BTC_USDT", debug=False).start()
 
-    while 1:
+    LTP(exchange="1000", symbol="BTC_USDT").start()
+    while True:
         pass
 
 

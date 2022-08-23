@@ -14,7 +14,7 @@ import websocket
 class Base:
     subscribe = None
 
-    def __init__(self, url, share_dq=None):
+    def __init__(self, url, share_dq=None, debug=True):
         self.share_dq = share_dq
         self.url = url
         self.ws = self._connect()
@@ -32,7 +32,8 @@ class Base:
         def run(x):
             while True:
                 msg = x.ws.recv()
-                # print(msg)
+                if self.debug:
+                    print(msg)
                 self.msg_handle(msg)
         t = Thread(target=run, args=(self,))
         t.daemon = True
@@ -62,11 +63,11 @@ class LTP(Base):
         }
     }
 
-    def __init__(self, exchange, symbol, url=None, share_dq=None):
+    def __init__(self, exchange, symbol, url=None, share_dq=None, debug=True):
         self.url = url if url else LTP_URL
         super().__init__(self.url, share_dq)
         self.ping = self._parse_to_json(self.ping, exchange=exchange, symbol=symbol)
-        self.subscribe = self._parse_to_json(self.subscribe, exchange=exchange, symbol=symbol)
+        self.subscribe = self._parse_to_json(self.subscribe, exchange=exchange, symbol=symbol, debug=debug)
 
     @staticmethod
     def _parse_to_json(entry, **kwargs):
@@ -115,13 +116,13 @@ class OKX(Base):
         "ETH_USDT": "ETH-USDT"
     }
 
-    def __init__(self, symbol, url=None, share_dq=None):
+    def __init__(self, symbol, url=None, share_dq=None, debug=True):
         self.url = url if url else OKX_URL
         if self.mp.get(symbol):
             self.subscribe["args"][0]["instId"] = self.mp.get(symbol)
         else:
             raise Exception("ERROR SYMBOL")
-        super().__init__(self.url, share_dq)
+        super().__init__(self.url, share_dq, debug=debug)
         self._login()
 
     def _login(self):
@@ -168,7 +169,7 @@ class BN(Base):
         "ETH_USDT": "ethusdt"
     }
 
-    def __init__(self, symbol, url=None, share_dq=None):
+    def __init__(self, symbol, url=None, share_dq=None, debug=True):
         if not url:
             if self.mp.get(symbol):
                 suffix = f"/ws/{self.mp.get(symbol)}@depth@100ms"
@@ -178,7 +179,7 @@ class BN(Base):
         else:
             self.url = url
 
-        super().__init__(self.url, share_dq=share_dq)
+        super().__init__(self.url, share_dq=share_dq, debug=debug)
 
     def msg_handle(self, msg):
         if self.share_dq is not None:
