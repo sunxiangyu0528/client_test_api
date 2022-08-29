@@ -1,7 +1,12 @@
 import base64
 import hmac
+import threading
+from collections import deque
 
-from config.ws import LTP_URL, OKX_URL, OKX_APIKEY, OKX_PASSPHRASE, OKX_SECRETKEY, BN_PREFIX
+import requests
+
+from common.log import logger
+from config.ws import LTP_URL, OKX_URL, OKX_APIKEY, OKX_PASSPHRASE, OKX_SECRETKEY, BN_PREFIX, FEISHU
 
 import json
 import ssl
@@ -17,14 +22,16 @@ class Base:
     def __init__(self, url, share_dq=None, debug=True):
         self.share_dq = share_dq
         self.url = url
-        self.ws = self._connect()
+        self.ws = None
+        self.debug = debug
+        self._connect()
 
     def _connect(self):
-        ws = websocket.create_connection(self.url, sslopt={"cert_reqs": ssl.CERT_NONE})
+        self.ws = websocket.create_connection(self.url, sslopt={"cert_reqs": ssl.CERT_NONE})
         print(f"connected {self.url}")
-        return ws
 
     def send_subscribe(self):
+        self.subscribe["op"] = "subscribe"
         self.ws.send(json.dumps(self.subscribe))
         print("==========subscribe==============")
 
@@ -33,6 +40,7 @@ class Base:
             while True:
                 msg = x.ws.recv()
                 if self.debug:
+                    logger.debug(msg)
                     print(msg)
                 self.msg_handle(msg)
         t = Thread(target=run, args=(self,))
@@ -65,9 +73,10 @@ class LTP(Base):
 
     def __init__(self, exchange, symbol, url=None, share_dq=None, debug=True):
         self.url = url if url else LTP_URL
-        super().__init__(self.url, share_dq)
+        super().__init__(self.url, share_dq, debug=debug)
+        self.catch = None
         self.ping = self._parse_to_json(self.ping, exchange=exchange, symbol=symbol)
-        self.subscribe = self._parse_to_json(self.subscribe, exchange=exchange, symbol=symbol, debug=debug)
+        self.subscribe = self._parse_to_json(self.subscribe, exchange=exchange, symbol=symbol)
 
     @staticmethod
     def _parse_to_json(entry, **kwargs):
@@ -80,14 +89,39 @@ class LTP(Base):
             while True:
                 time.sleep(10)
                 ltp.ws.send(json.dumps(ltp.ping))
-                print("==========ping==============")
+                if self.debug:
+                    print("==========ping==============")
         t = Thread(target=run, args=(self,))
         t.daemon = True
         t.start()
 
+    def task_check(self):
+        def run():
+            while True:
+                time.sleep(30)
+                if self.catch:
+                    self.catch = None
+                    print("check done")
+                else:
+                    data = {"msg": f"{threading.current_thread()}: ltp no data"}
+                    requests.post(url=FEISHU, json=data)
+                    print("ltp no data")
+
+        t = Thread(target=run)
+        t.daemon = True
+        t.start()
+
+    def send_unsubscribe(self):
+        self.subscribe["op"] = "unsubscribe"
+        print("==========unsubscribe============")
+        self.ws.send(json.dumps(self.subscribe))
+
+
     def msg_handle(self, msg):
+        msg = json.loads(msg)
+        if msg["event"] != "pong":
+            self.catch = msg
         if self.share_dq is not None:
-            msg = json.loads(msg)
             if msg.get("action") == "update":
                 ts = time.time()
                 msg["get_ts"] = ts
@@ -97,6 +131,7 @@ class LTP(Base):
         self.send_subscribe()
         self.on_message()
         self.task_ping()
+        self.task_check()
 
 
 class OKX(Base):
@@ -194,13 +229,4 @@ class BN(Base):
 
 
 if __name__ == '__main__':
-    # ltp = LTP(exchange="1000", symbol="ETH_USDT")
-    # ltp.start()
-    # okx = OKX(symbol="ETH_USDT")
-    # okx.start()
-    bn = BN(symbol="ETH_USDT")
-    bn.start()
-
-    while 1:
-        pass
-
+    pass

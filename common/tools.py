@@ -44,6 +44,7 @@ class Check:
                     return False
         return True
 
+
     def is_equals(self, ltp, exchange):
         self.ltp = ltp.get("data")
         if self.ex_name == "BN":

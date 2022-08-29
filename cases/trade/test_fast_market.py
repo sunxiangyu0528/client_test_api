@@ -50,18 +50,18 @@ def test_okx_01():
     assert numpy.median(ans) <= 3
 
 
-@pytest.mark.parametrize('n', [4])
-@pytest.mark.tags("manual")
+@pytest.mark.parametrize('n', [100])
+@pytest.mark.tags("manual", "smoke")
 def test_okx_02(n):
     """
     author: alex
     logic: 并发订阅，观察稳定性
     exception:
     """
-    for i in range(n):
-        LTP(exchange="1000", symbol="BTC_USDT", debug=False).start()
+    for i in range(n-1):
+        LTP(exchange="1001", symbol="BTC_USDT", debug=False).start()
 
-    LTP(exchange="1000", symbol="BTC_USDT").start()
+    LTP(exchange="1000", symbol="BTC_USDT", debug=False).start()
     while True:
         pass
 
@@ -115,9 +115,9 @@ def test_bn_01(exchange, symbol):
 
     dq1 = list()
     dq2 = list()
-    ltp = LTP(exchange=exchange, symbol=symbol, share_dq=dq1)
-    bn = BN(symbol=symbol, share_dq=dq2)
-    bn.start()
+    ltp = LTP(exchange=exchange, symbol=symbol, share_dq=dq1, debug=False)
+    ex = BN(symbol=symbol, share_dq=dq2, debug=False)
+    ex.start()
     time.sleep(1)
     ltp.start()
 
@@ -129,23 +129,36 @@ def test_bn_01(exchange, symbol):
         time.sleep(0.5)
 
     ltp_data = dq1.pop(0)
-    okx_data = dq2.pop(0)
+    ex_data = dq2.pop(0)
     check = Check(ex_name="BN")
     while True:
-        if check.is_equals(ltp_data, okx_data):
+        if check.is_equals(ltp_data, ex_data):
             break
-        okx_data = dq2.pop(0)
+        ex_data = dq2.pop(0)
 
     times = 500
     while times > 0:
         if dq2 and dq1:
-            okx_data = dq2.pop(0)
+            ex_data = dq2.pop(0)
             ltp_data = dq1.pop(0)
-            # print(f"=========start==========")
-            # print(f"ltp: {ltp_data}")
-            # print(f"okx: {okx_data}")
-            # print(f"=========end============")
-            assert check.is_equals(ltp_data, okx_data)
-            times -= 1
-        else:
-            time.sleep(0.5)
+            print(f"=========start==========")
+            print(f"ltp: {ltp_data}")
+            print(f"okx: {ex_data}")
+            print(f"=========end============")
+            if check.is_equals(ltp_data, ex_data):
+                times -= 1
+            else:
+                print(f"ex_data: {ex_data}")
+                print(f"ltp_data: {ltp_data}")
+                assert False
+
+def test_bn_02():
+
+    ltp = LTP(exchange="1000", symbol="BTC_USDT")
+    ltp.start()
+    time.sleep(10)
+    ltp.send_unsubscribe()
+    time.sleep(30)
+    ltp.send_subscribe()
+    while 1:
+        pass

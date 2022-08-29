@@ -12,3 +12,5 @@ EXCHANGE = {"OKX", "BN"}
 KYE = ["asks", "bids"]
 
 BN_PREFIX = "wss://stream.binance.com:9443"
+
+FEISHU = "http://www.feishu.cn/flow/api/trigger-webhook/ccad29f80a06b4192377682bf11009c9"
