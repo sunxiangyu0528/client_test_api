@@ -5,6 +5,7 @@ from collections import deque
 
 import requests
 
+from common.feishu_robot import FeishuRobot
 from common.log import logger
 from config.ws import LTP_URL, OKX_URL, OKX_APIKEY, OKX_PASSPHRASE, OKX_SECRETKEY, BN_PREFIX, FEISHU
 
@@ -90,7 +91,7 @@ class LTP(Base):
                 time.sleep(10)
                 ltp.ws.send(json.dumps(ltp.ping))
                 if self.debug:
-                    print("==========ping==============")
+                    print(f"=========={ltp.ping}==============")
         t = Thread(target=run, args=(self,))
         t.daemon = True
         t.start()
@@ -98,13 +99,14 @@ class LTP(Base):
     def task_check(self):
         def run():
             while True:
+                # data = {"msg": f"【{time.asctime()}】 {threading.current_thread().name}: ltp no data"}
                 time.sleep(30)
                 if self.catch:
                     self.catch = None
                     print("check done")
                 else:
-                    data = {"msg": f"{threading.current_thread()}: ltp no data"}
-                    requests.post(url=FEISHU, json=data)
+                    msg = json.dumps({"msg": f"【{time.asctime()}】【{threading.current_thread().name}】: ltp no data"})
+                    FeishuRobot.send(msg=msg)
                     print("ltp no data")
 
         t = Thread(target=run)
@@ -119,7 +121,7 @@ class LTP(Base):
 
     def msg_handle(self, msg):
         msg = json.loads(msg)
-        if msg["event"] != "pong":
+        if msg.get("event") != "pong":
             self.catch = msg
         if self.share_dq is not None:
             if msg.get("action") == "update":
@@ -229,4 +231,5 @@ class BN(Base):
 
 
 if __name__ == '__main__':
-    pass
+    data = {"msg": "ltp no data"}
+    requests.post(url=FEISHU, json=data)

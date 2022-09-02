@@ -4,6 +4,7 @@ import numpy
 import pytest
 
 from common.tools import Check
+from common.utils import manual_step
 from exchange.exchange import LTP, OKX, BN
 
 
@@ -50,7 +51,7 @@ def test_okx_01():
     assert numpy.median(ans) <= 3
 
 
-@pytest.mark.parametrize('n', [100])
+@pytest.mark.parametrize('n', [1])
 @pytest.mark.tags("manual", "smoke")
 def test_okx_02(n):
     """
@@ -61,7 +62,7 @@ def test_okx_02(n):
     for i in range(n-1):
         LTP(exchange="1001", symbol="BTC_USDT", debug=False).start()
 
-    LTP(exchange="1000", symbol="BTC_USDT", debug=False).start()
+    LTP(exchange="1001", symbol="BTC_USDT").start()
     while True:
         pass
 
@@ -156,9 +157,8 @@ def test_bn_02():
 
     ltp = LTP(exchange="1000", symbol="BTC_USDT")
     ltp.start()
-    time.sleep(10)
-    ltp.send_unsubscribe()
-    time.sleep(30)
-    ltp.send_subscribe()
+    manual_step("kkkkkkkkk")
+    # ltp.send_unsubscribe()
+    # ltp.send_subscribe()
     while 1:
         pass
