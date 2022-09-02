@@ -2,6 +2,7 @@ import json
 
 import requests
 headers = {"content-type": "application/json"}
+print('git')
 
 
 def test_login():
