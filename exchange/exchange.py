@@ -128,12 +128,13 @@ class LTP(Base):
                 ts = time.time()
                 msg["get_ts"] = ts
                 self.share_dq.append(msg)
+        print(msg)
 
     def start(self):
         self.send_subscribe()
         self.on_message()
         self.task_ping()
-        self.task_check()
+        # self.task_check()
 
 
 class OKX(Base):

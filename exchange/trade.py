@@ -14,14 +14,20 @@ from config.ws import LTP_URL, OKX_URL, OKX_APIKEY, OKX_PASSPHRASE, OKX_SECRETKE
 
 
 class Base:
-
     def __init__(self, url):
         self.url = url
         self.ws = None
+        self.flag = True
         self._connect()
 
     def _connect(self):
         self.ws = websocket.create_connection(url=self.url, sslopt={"cert_reqs": ssl.CERT_NONE})
+
+    def on_message(self, msg):
+        pass
+
+    def on_close(self, e):
+        pass
 
     def send_subscribe(self):
         pass
@@ -29,7 +35,7 @@ class Base:
     def on_recv(self):
 
         def run(x):
-            while True:
+            while x.flag:
                 try:
                     msg = x.ws.recv()
                     x.on_message(msg)
@@ -41,20 +47,32 @@ class Base:
         t.daemon = True
         t.start()
 
-    def on_message(self, msg):
-        print(msg)
-
-    def on_colse(self, e):
-        pass
-
 
 class LTP(Base):
 
-    def __init__(self, url=None):
+    def __init__(self, url=None, share_dq=None):
+        # 判断是否有推送消息过来
         self.is_recv = True
-        self.flag = True
+        # 消息缓存
+        self.share_dq = share_dq
+        # 默认URL
         self.url = url if url else LTP_URL
         super().__init__(self.url)
+
+    def on_recv(self):
+
+        def run(ltp):
+            while ltp.flag:
+                try:
+                    msg = ltp.ws.recv()
+                    ltp.on_message(msg)
+                except WebSocketConnectionClosedException as e:
+                    ltp.on_close(e)
+                    break
+
+        t = Thread(target=run, args=(self,))
+        t.daemon = True
+        t.start()
 
     def send_subscribe(self, op="subscribe", channel="book", exchange="1001", symbol="BTC_USDT"):
         subscribe = json.dumps({
@@ -72,14 +90,14 @@ class LTP(Base):
         ping = json.dumps({"op": "ping"})
 
         def run(ltp, ping):
-            while True:
+            while ltp.flag:
                 time.sleep(10)
                 try:
-                    ltp.send(ping)
+                    ltp.ws.send(ping)
+                    print(f">>>>>>>{ping}")
                 except WebSocketConnectionClosedException as e:
                     print(e)
                     ltp.flag = False
-                    break
 
         t = Thread(target=run, args=(self, ping))
         t.daemon = True
@@ -87,9 +105,11 @@ class LTP(Base):
 
     def on_message(self, msg):
         msg = json.loads(msg)
-        if msg.get("action") == "update":
+        if msg.get("event") != "pong":
             self.is_recv = True
-        # print(msg)
+            if self.share_dq is not None and msg.get("action") == "update":
+                self.share_dq.append(msg)
+        print(msg)
 
     def task_check(self):
         def run(ltp):
@@ -113,20 +133,30 @@ class LTP(Base):
         t.daemon = True
         t.start()
 
-    def on_colse(self, e):
-        self.flag=False
+    def on_close(self, e):
+        self.flag = False
+
+    def start(self, ping=True, recv=True, check=False):
+        if recv:
+            self.on_recv()
+        if ping:
+            self.task_ping()
+        if check:
+            self.task_ping()
 
 
 class OKX(Base):
-    mp = {
-        "BTC_USDT": "BTC-USDT",
-        "ETH_USDT": "ETH-USDT"
-    }
 
-    def __init__(self, url=None):
+    def __init__(self, url=None, share_dq=None):
         self.url = url if url else OKX_URL
+        self.share_dq = share_dq
         super().__init__(self.url)
         self._login()
+
+    @staticmethod
+    def translate(v):
+        v = str(v).split("_")
+        return "-".join(v)
 
     def _login(self):
         ts, sign = self._get_sign()
@@ -151,6 +181,7 @@ class OKX(Base):
         return ts, sign
 
     def send_subscribe(self, op="subscribe", channel="books-l2-tbt", instId="BTC_USDT"):
+        instId = self.translate(instId)
         subscribe = json.dumps({
             "op": f"{op}",
             "args": [
@@ -162,38 +193,47 @@ class OKX(Base):
         })
         self.ws.send(subscribe)
 
+    def on_message(self, msg):
+        msg = json.loads(msg)
+        if msg.get("action") == "update":
+            if not self.share_dq is None:
+                self.share_dq.append(msg)
+        print(msg)
+
+    def start(self, recv=True):
+        if recv:
+            self.on_recv()
 
 class BN(Base):
-    mp = {
-        "BTC_USDT": "btcusdt",
-        "ETH_USDT": "ethusdt"
-    }
 
-    def __init__(self, url=None, symbol="BTC_USDT"):
-        suffix = f"/ws/{self.mp.get(symbol)}@depth@100ms"
+    def __init__(self, url=None, symbol="BTC_USDT", share_dq=None):
+        self.symbol = self.translate(symbol)
+        suffix = f"/ws/{self.symbol}@depth@100ms"
         self.url = url if url else BN_PREFIX + suffix
+        self.share_dq = share_dq
         super().__init__(self.url)
 
+    @staticmethod
+    def translate(v):
+        v = str(v).split("_")
+        res = [i.lower() for i in v]
+        return "".join(res)
+
+    def on_message(self, msg):
+        msg = json.loads(msg)
+        if msg.get("e") == "depthUpdate":
+            if self.share_dq is not None:
+                self.share_dq.append(msg)
+        print(msg)
 
 if __name__ == '__main__':
-    # a = time.time()
-    # ltp = LTP()
-    # ltp.send_subscribe()
-    # ltp.on_recv()
-    # ltp.task_check()
-    # time.sleep(30)
-    # ltp.send_subscribe(op="unsubscribe")
-    # while ltp.flag:
-    #     pass
-    # b = time.time()
-    # print(a-b)
-    okx = OKX()
-    okx.on_recv()
-    okx.send_subscribe(op="oooo")
-    time.sleep(1)
-    # okx.send_subscribe()
+    # bn = BN(symbol="ADA_USDT")
+    # bn.on_recv()
 
+    ltp = LTP()
+    ltp.send_subscribe(exchange="1000")
+    ltp.on_recv()
+    ltp.task_ping()
 
-
-    while 1:
+    while True:
         pass
