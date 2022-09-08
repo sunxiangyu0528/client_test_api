@@ -131,7 +131,7 @@ def test_bn_01(exchange, symbol):
 
     ltp_data = dq1.pop(0)
     ex_data = dq2.pop(0)
-    check = Check(ex_name="BN")
+    check = Check(ex_name="OKX")
     while True:
         if check.is_equals(ltp_data, ex_data):
             break
@@ -142,17 +142,16 @@ def test_bn_01(exchange, symbol):
         if dq2 and dq1:
             ex_data = dq2.pop(0)
             ltp_data = dq1.pop(0)
-            print(f"=========start==========")
-            print(f"ltp: {ltp_data}")
-            print(f"okx: {ex_data}")
-            print(f"=========end============")
+            # print(f"=========start==========")
+            # print(f"ltp: {ltp_data}")
+            # print(f"okx: {ex_data}")
+            # print(f"=========end============")
             if check.is_equals(ltp_data, ex_data):
                 times -= 1
             else:
                 print(f"ex_data: {ex_data}")
                 print(f"ltp_data: {ltp_data}")
                 assert False
-
 def test_bn_02():
 
     ltp = LTP(exchange="1000", symbol="BTC_USDT")
