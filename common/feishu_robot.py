@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from config.ws import FEISHU
+from client_test_api.config.ws import FEISHU
 
 
 class FeishuRobot:

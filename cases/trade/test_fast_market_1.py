@@ -52,7 +52,7 @@ def test_market_okx_03():
     """
     Author: Alex
     Logic: 订阅之后，再订阅其他exchange
-    Expect：
+    Expect：支持多个订阅
     """
 
     ltp = LTP()
@@ -74,7 +74,7 @@ def test_market_okx_04():
     """
     Author: Alex
     Logic: 订阅之后，再订阅其他symbol
-    Expect：？
+    Expect：支持多个订阅
     """
 
     ltp = LTP()
@@ -98,7 +98,6 @@ def test_market_okx_05():
     """
     ltp = LTP()
     ltp.on_recv()
-    ltp.task_ping()
     ltp.send_subscribe(exchange="ERROR")
     ltp.send_subscribe(channel="ERROR")
     ltp.send_subscribe(op="ERROR")
@@ -186,6 +185,7 @@ def test_market_01(symbol):
     ltp.flag = False
     ex.flag = False
 
+
 @pytest.mark.parametrize("symbol", ["BTC_USDT", "ETH_USDT", "ADA_USDT",
                                     "SOL_USDT", "XRP_USDT", "TRX_USDT",
                                     "DOGE_USDT", "DOT_USDT", "LTC_USDT",
@@ -244,9 +244,9 @@ def test_market_02(symbol):
 
 
 def test_01():
-    okx = OKX()
-    okx.send_subscribe(instId="DOT_USDT")
-    okx.on_recv()
-
+    ltp = LTP()
+    ltp.send_subscribe()
+    ltp.on_recv()
+    ltp.task_ping()
     while True:
         pass

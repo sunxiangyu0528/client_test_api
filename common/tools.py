@@ -1,4 +1,4 @@
-from config.ws import EXCHANGE
+from client_test_api.config.ws import EXCHANGE
 
 
 class Check:

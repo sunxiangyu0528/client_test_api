@@ -1,7 +1,6 @@
-
-
-LTP_URL = "ws://47.242.68.161:8082/ws"
-
+ltp_pro = 'wss://ws.liquiditytech.com/ws'
+ltp_test = "wss://test-api.liquiditytech.com:8443/ws"
+LTP_URL = ltp_pro
 
 OKX_URL = "wss://ws.okx.com:8443/ws/v5/public"
 OKX_APIKEY = "7e760270-c413-4097-be68-ef98c860b4ec"
@@ -13,4 +12,7 @@ KYE = ["asks", "bids"]
 
 BN_PREFIX = "wss://stream.binance.com:9443"
 
-FEISHU = "https://www.feishu.cn/flow/api/trigger-webhook/ccad29f80a06b4192377682bf11009c9"
+JinBao = 'https://open.feishu.cn/open-apis/bot/v2/hook/b96f1dde-3421-4492-98db-56308052d511'
+FEISHU = JinBao
+
+

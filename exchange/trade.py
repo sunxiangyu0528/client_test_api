@@ -86,8 +86,15 @@ class LTP(Base):
         print(f">>>>>>>{subscribe}")
         self.ws.send(subscribe)
 
-    def task_ping(self):
-        ping = json.dumps({"op": "ping"})
+    def task_ping(self,op="ping", channel="book", exchange="1001", symbol="BTC_USDT"):
+        ping = json.dumps({
+            "op": f"{op}",
+            "args": {
+                "channel": f"{channel}",
+                "exchange": f"{exchange}",
+                "symbol": f"{symbol}"
+            }
+        })
 
         def run(ltp, ping):
             while ltp.flag:
@@ -111,6 +118,7 @@ class LTP(Base):
                 self.share_dq.append(msg)
         print(msg)
 
+
     def task_check(self):
         def run(ltp):
             count = 0
@@ -129,7 +137,7 @@ class LTP(Base):
             msg = json.dumps({"msg": f"【{time.asctime()}】【{threading.current_thread().name}】: ltp no data"})
             a = FeishuRobot.send(msg=msg)
 
-        t = Thread(target=run, args=(self, ))
+        t = Thread(target=run, args=(self,))
         t.daemon = True
         t.start()
 
@@ -161,12 +169,12 @@ class OKX(Base):
     def _login(self):
         ts, sign = self._get_sign()
         data = {
-                "op": "login",
-                "args": [{"apiKey": OKX_APIKEY,
-                          "passphrase": OKX_PASSPHRASE,
-                          "timestamp": ts,
-                          "sign": sign.decode('utf-8')}]
-                }
+            "op": "login",
+            "args": [{"apiKey": OKX_APIKEY,
+                      "passphrase": OKX_PASSPHRASE,
+                      "timestamp": ts,
+                      "sign": sign.decode('utf-8')}]
+        }
         self.ws.send(json.dumps(data))
         if self.ws.recv():
             return
@@ -204,6 +212,7 @@ class OKX(Base):
         if recv:
             self.on_recv()
 
+
 class BN(Base):
 
     def __init__(self, url=None, symbol="BTC_USDT", share_dq=None):
@@ -225,6 +234,7 @@ class BN(Base):
             if self.share_dq is not None:
                 self.share_dq.append(msg)
         print(msg)
+
 
 if __name__ == '__main__':
     # bn = BN(symbol="ADA_USDT")
