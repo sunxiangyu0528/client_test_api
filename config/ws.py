@@ -15,4 +15,6 @@ BN_PREFIX = "wss://stream.binance.com:9443"
 JinBao = 'https://open.feishu.cn/open-apis/bot/v2/hook/b96f1dde-3421-4492-98db-56308052d511'
 FEISHU = JinBao
 
+li_01 = [ "BTC_USDT", "ETH_USDT",  "ADA_USDT", "XRP_USDT", "SOL_USDT",
+           "TRX_USDT", "DOGE_USDT","DOT_USDT", "LTC_USDT","ETC_USDT"]
 
