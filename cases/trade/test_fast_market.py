@@ -64,8 +64,6 @@ def test_okx_02(n):
         LTP(exchange="1001", symbol="BTC_USDT", share_dq=dq1, debug=False).start()
 
     LTP(exchange="1001", symbol="BTC_USDT").start()
-    while True:
-        pass
 
 
 @pytest.mark.parametrize(['exchange', "symbol"], [("1001", "BTC_USDT"), ("1001", "ETH_USDT")])
@@ -153,4 +151,3 @@ def test_bn_01(exchange, symbol):
                 print(f"ex_data: {ex_data}")
                 print(f"ltp_data: {ltp_data}")
                 assert False
-
