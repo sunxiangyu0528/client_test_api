@@ -6,6 +6,7 @@ import json
 import ssl
 from common.log import logger
 from config.ws import LTP_URL
+import _thread
 
 
 class TestReConnect(object):
@@ -17,15 +18,6 @@ class TestReConnect(object):
         """
 
         reconnect_count = 0
-        ws = websocket.create_connection(LTP_URL, sslopt={"cert_reqs": ssl.CERT_NONE})
-        ping = {
-            "op": "ping",
-            "args": {
-                "channel": "book",
-                "exchange": "1001",
-                "symbol": "BTC_USDT"
-            }
-        }
 
         def on_message(ws, message):
 
@@ -46,33 +38,48 @@ class TestReConnect(object):
                 print("重新连接的时间为：{}".format(datetime.datetime.now()))
                 reconnect_count += 1
                 if reconnect_count < 100:
-                    connection_tmp(ws)
+                    print("reconnect_count小于100")
             else:
                 print("其他error!")
                 logger.debug("其他error!")
 
-        def on_close(ws):
-            print("### closed ###")
-
         def on_open(ws):
-            def run(*args):
-                ws.send(json.dumps(ping))
-                time.sleep(1)
+            # 线程运行函数
+            def process():
+                ping = {
+                    "args": {
+                        "exchange": "1001",
+                        "symbol": "XRP_USDT",
+                        "channel": "trades"
+                    },
+                    "op": "ping"
+                }
+                subscribe = {
+                    "args": {
+                        "exchange": "1001",
+                        "symbol": "XRP_USDT",
+                        "channel": "trades"
+                    },
+                    "op": "subscribe"
+                }
+
+                ws.send(json.dumps(subscribe))
+                # 休息 0.2 秒先接收服务器回复的消息
+                time.sleep(0.2)
+                while True:
+                    time.sleep(10)
+                    ws.send(json.dumps(ping))
+                # 关闭 Websocket 的连接
+
                 ws.close()
+                print("Websocket closed")
 
-            thread.start_new_thread(run, ())
+            thread.start_new_thread(process, ())
 
-        def connection_tmp(ws):
-            websocket.enableTrace(True)
-            ws = websocket.WebSocketApp(LTP_URL,
-                                        on_message=on_message,
-                                        on_error=on_error,
-                                        # on_close=on_close
-                                        )
-            ws.on_open = on_open
-            ws.run_forever(ping_interval=10, ping_timeout=5)
-
-        for i in range(5):
-            # while True:
-            time.sleep(1)
-            connection_tmp(ws)
+        websocket.enableTrace(True)
+        ws = websocket.WebSocketApp(LTP_URL,
+                                    on_message=on_message,
+                                    on_error=on_error,
+                                    )
+        ws.on_open = on_open
+        ws.run_forever()

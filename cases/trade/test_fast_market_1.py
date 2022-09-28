@@ -62,12 +62,10 @@ def test_market_okx_03():
 
     time.sleep(1)
 
+    ltp.send_subscribe(exchange=1000)
     ltp.send_subscribe()
-    ltp.send_subscribe()
-    ltp.send_subscribe()
-
-    while 1:
-        pass
+    ltp.send_subscribe(exchange=1000)
+    assert eval(ltp.ws.recv()).get("action") == "update"
 
 
 def test_market_okx_04():
@@ -85,9 +83,7 @@ def test_market_okx_04():
     time.sleep(1)
 
     ltp.send_subscribe(symbol="ETH_USDT")
-
-    while 1:
-        pass
+    assert eval(ltp.ws.recv()).get("action") == "update"
 
 
 def test_market_okx_05():
@@ -102,9 +98,7 @@ def test_market_okx_05():
     ltp.send_subscribe(channel="ERROR")
     ltp.send_subscribe(op="ERROR")
     ltp.send_subscribe(symbol="ERROR")
-
-    while 1:
-        pass
+    assert eval(ltp.ws.recv()).get("event") == "error"
 
 
 def test_market_okx_06():
@@ -113,19 +107,12 @@ def test_market_okx_06():
     Logic: 多链路压测
     Expect：
     """
-    for i in range(0):
+    for i in range(50):
         t = LTP()
         t.send_subscribe(channel="bbo")
         t.on_recv()
         t.task_ping()
         # t.task_check()
-
-    okx = OKX()
-    okx.send_subscribe(channel="trades")
-    okx.on_recv()
-
-    while 1:
-        pass
 
 
 @pytest.mark.parametrize("symbol", ["BTC_USDT", "ETH_USDT", "ADA_USDT",
@@ -167,7 +154,7 @@ def test_market_01(symbol):
             break
         ex_data = dq2.popleft()
 
-    times = 300
+    times = 100
     while times > 0:
         if dq2 and dq1:
             ex_data = dq2.popleft()
@@ -186,14 +173,16 @@ def test_market_01(symbol):
     ex.flag = False
 
 
-@pytest.mark.parametrize("symbol", ["BTC_USDT", "ETH_USDT", "ADA_USDT",
-                                    "SOL_USDT", "XRP_USDT", "TRX_USDT",
-                                    "DOGE_USDT", "DOT_USDT", "LTC_USDT",
-                                    "ETC_USDT"])
+
+@pytest.mark.parametrize("symbol", [
+    "BTC_USDT", "ETH_USDT", "ADA_USDT",
+    "SOL_USDT", "XRP_USDT",
+    "DOGE_USDT", "DOT_USDT", "LTC_USDT",
+    "ETC_USDT"])
 def test_market_02(symbol):
     """
     Author: Alex
-    Logic: 验证ltp - okx 不同币种的数据正确性
+    Logic: 验证ltp - BN 不同币种的数据正确性
     Expect：符合预期
     """
 
@@ -241,12 +230,3 @@ def test_market_02(symbol):
                 assert False
     ltp.flag = False
     ex.flag = False
-
-
-def test_01():
-    ltp = LTP()
-    ltp.send_subscribe()
-    ltp.on_recv()
-    ltp.task_ping()
-    while True:
-        pass

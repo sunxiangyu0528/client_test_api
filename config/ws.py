@@ -18,3 +18,5 @@ FEISHU = JinBao
 li_01 = [ "BTC_USDT", "ETH_USDT",  "ADA_USDT", "XRP_USDT", "SOL_USDT",
            "TRX_USDT", "DOGE_USDT","DOT_USDT", "LTC_USDT","ETC_USDT"]
 
+li_02 = [ "BTC_USDT", "ETH_USDT",  "ADA_USDT", "XRP_USDT", "SOL_USDT",
+            "DOGE_USDT","DOT_USDT", "LTC_USDT","ETC_USDT"]

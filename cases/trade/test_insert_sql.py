@@ -12,7 +12,7 @@ import websocket
 from websocket import create_connection, WebSocketConnectionClosedException
 
 from common.log import logger
-from config.ws import OKX_URL, LTP_URL, li_01
+from config.ws import OKX_URL, LTP_URL, li_01, li_02
 from exchange.exchange import Base, LTP, OKX
 
 base = Base(url=LTP_URL)
@@ -25,6 +25,7 @@ class TestDemo(object):
     def test_01(self, symbol):
         """
         author: Andre
+        Logic : "channel": "book","exchange": "1001"的情况
         """
         data = {
             "args": {
@@ -37,7 +38,7 @@ class TestDemo(object):
         ws = create_connection(url=LTP_URL, sslopt={"cert_reqs": ssl.CERT_NONE})
         ws.send(json.dumps(data))
         # 设置的循环次数
-        n = 1
+        n = 10
         while n > 0:
             result = ws.recv()
             if eval(result).get("action") == "update":
@@ -57,13 +58,14 @@ class TestDemo(object):
                       "VALUES('1001', 'book',  '{}'," \
                       " '{}','{}' ,'{}', '{}','{}','{}')".format(symbol, exchangeTimestamp, timestamp,
                                                                  system_time, create_time, gwl, qel)
-                print(sql, "AAA")
+
                 db_trade.find_one(sql)
                 n = n - 1
 
     @pytest.mark.parametrize('symbol ', li_01)
     def test_02(self, symbol):
         """
+        author: Andre
         exchange：1001
         chanel为bbo的情况
 
@@ -79,18 +81,14 @@ class TestDemo(object):
         ws = create_connection(url=LTP_URL, sslopt={"cert_reqs": ssl.CERT_NONE})
         ws.send(json.dumps(data))
         # 设置的循环次数
-        n = 5
+        n = 10
         while n > 0:
             result = ws.recv()
             if eval(result).get("event") == None:
-                # receiveTimestampNs = eval(result).get("data").get("receiveTimestampNs")
-                # sendTimestampNs = eval(result).get("data").get("sendTimestampNs")
-                # sendTime_resTime = sendTimestampNs - receiveTimestampNs
                 system_time = get_now_time(data="ms")
                 create_time = get_now_time(data="now")
                 gwl = eval(result)["data"]["gwl"]
                 qel = eval(result)["data"]["qel"]
-
                 sql = "INSERT INTO ltp_lat_monitor.trade_test " \
                       "( exchange, channel, symbol, system_time, create_time" \
                       "  ,gwl,qel) " \
@@ -106,6 +104,7 @@ class TestDemo(object):
         """
         exchange：1001
         chanel为trades的情况
+        author: Andre
 
         """
         data = {
@@ -119,13 +118,14 @@ class TestDemo(object):
         ws = create_connection(url=LTP_URL, sslopt={"cert_reqs": ssl.CERT_NONE})
         ws.send(json.dumps(data))
         # 设置的循环次数
-        n = 5
+        n = 10
         while n > 0:
             result = ws.recv()
             if eval(result).get("event") == None:
                 # receiveTimestampNs = eval(result).get("data").get("receiveTimestampNs")
                 # sendTimestampNs = eval(result).get("data").get("sendTimestampNs")
                 tradeTime = eval(result).get("data").get("tradeTime")
+                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
                 # sendTime_resTime = sendTimestampNs - receiveTimestampNs
                 system_time = get_now_time(data="ms")
                 create_time = get_now_time(data="now")
@@ -133,18 +133,100 @@ class TestDemo(object):
                 qel = eval(result)["data"]["qel"]
 
                 sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                      "( exchange, channel, symbol,  system_time, create_time," \
+                      "( exchange, channel, symbol, exchangeTimestamp ,system_time, create_time," \
                       "    tradeTime,gwl,qel) " \
-                      "VALUES('1001' , 'trades',  '{}', '{}'," \
+                      "VALUES('1001' , 'trades',  '{}', '{}','{}'," \
                       " '{}', '{}', '{}','{}');". \
-                    format(symbol, system_time, create_time, tradeTime, gwl, qel)
+                    format(symbol, exchangeTimestamp, system_time, create_time, tradeTime, gwl, qel)
                 db_trade.find_one(sql)
                 n = n - 1
 
+    @pytest.mark.parametrize('symbol', li_02)
     def test_04(self, symbol):
         """
         author: Andre
-        exchange：1001
+        exchange：1000
+        chanel为book的情况
+
+        """
+        data = {
+            "args": {
+                "exchange": "1000",
+                "symbol": symbol,
+                "channel": "book"
+            },
+            "op": "subscribe"
+        }
+        ws = create_connection(url=LTP_URL, sslopt={"cert_reqs": ssl.CERT_NONE})
+        ws.send(json.dumps(data))
+        # 设置的循环次数
+        n = 10
+        while n > 0:
+            result = ws.recv()
+            if eval(result).get("event") == None:
+                # receiveTimestampNs = eval(result)["data"]["receiveTimestampNs"]
+                # sendTimestampNs = eval(result)["data"]["sendTimestampNs"]
+                timestamp = eval(result)["data"]["timestamp"]
+                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
+                # sendTime_resTime = sendTimestampNs - receiveTimestampNs
+                system_time = get_now_time(data="ms")
+                create_time = get_now_time(data="now")
+                gwl = eval(result)["data"]["gwl"]
+                qel = eval(result)["data"]["qel"]
+                sql = "INSERT INTO ltp_lat_monitor.trade_test " \
+                      "(exchange, channel, symbol, exchangeTimestamp," \
+                      " timestamp, system_time, create_time, gwl ,qel" \
+                      "   ) " \
+                      "VALUES('1000', 'book',  '{}'," \
+                      " '{}','{}' ,'{}', '{}','{}','{}')".format(symbol, exchangeTimestamp, timestamp,
+                                                                 system_time, create_time, gwl, qel)
+                db_trade.find_one(sql)
+                n = n - 1
+
+    @pytest.mark.parametrize('symbol', li_02)
+    def test_05(self, symbol):
+        """
+        author: Andre
+        exchange：1000
+        chanel为bbo的情况
+
+        """
+        data = {
+            "args": {
+                "exchange": "1000",
+                "symbol": symbol,
+                "channel": "bbo"
+            },
+            "op": "subscribe"
+        }
+        ws = create_connection(url=LTP_URL, sslopt={"cert_reqs": ssl.CERT_NONE})
+        ws.send(json.dumps(data))
+        # 设置的循环次数
+        n = 10
+        while n > 0:
+            result = ws.recv()
+            logger.info("返回结果是：{}".format(result))
+            if eval(result).get("event") == None:
+                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
+                system_time = get_now_time(data="ms")
+                create_time = get_now_time(data="now")
+                gwl = eval(result)["data"]["gwl"]
+                qel = eval(result)["data"]["qel"]
+                sql = "INSERT INTO ltp_lat_monitor.trade_test " \
+                      "(exchange, channel, symbol, exchangeTimestamp," \
+                      " system_time, create_time, gwl ,qel" \
+                      "   ) " \
+                      "VALUES('1000', 'bbo',  '{}'," \
+                      " '{}','{}' , '{}','{}','{}')".format(symbol, exchangeTimestamp,
+                                                            system_time, create_time, gwl, qel)
+                db_trade.find_one(sql)
+                n = n - 1
+
+    @pytest.mark.parametrize('symbol', li_02)
+    def test_06(self, symbol):
+        """
+        author: Andre
+        exchange：1000
         chanel为trades的情况
 
         """
@@ -159,28 +241,25 @@ class TestDemo(object):
         ws = create_connection(url=LTP_URL, sslopt={"cert_reqs": ssl.CERT_NONE})
         ws.send(json.dumps(data))
         # 设置的循环次数
-        n = 5
+        n = 10
         while n > 0:
             result = ws.recv()
             if eval(result).get("event") == None:
-                receiveTimestampNs = eval(result).get("data").get("receiveTimestampNs")
-                sendTimestampNs = eval(result).get("data").get("sendTimestampNs")
-                tradeTime = eval(result).get("data").get("tradeTime")
-                sendTime_resTime = sendTimestampNs - receiveTimestampNs
+                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
                 system_time = get_now_time(data="ms")
                 create_time = get_now_time(data="now")
-
+                gwl = eval(result)["data"]["gwl"]
+                qel = eval(result)["data"]["qel"]
                 sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                      "( exchange, channel, symbol, receiveTimestampNs, sendTimestampNs," \
-                      " sendTime_resTime, system_time, create_time," \
-                      "   , tradeTime) " \
-                      "VALUES('1000' , 'trades', '{}', '{}', '{}', '{}'," \
-                      " '{}', '{}', '{}');". \
-                    format(symbol, receiveTimestampNs, sendTimestampNs,
-                           sendTime_resTime, system_time, create_time, tradeTime)
+                      "(exchange, channel, symbol, exchangeTimestamp," \
+                      "  system_time, create_time, gwl ,qel" \
+                      "   ) " \
+                      "VALUES('1000', 'trades',  '{}'," \
+                      " '{}','{}' ,'{}', '{}','{}')" \
+                    .format(symbol, exchangeTimestamp, system_time, create_time, gwl, qel)
                 db_trade.find_one(sql)
                 n = n - 1
 
 
 if __name__ == '__main__':
-    pytest.main()
+    pytest.main(['--reruns', '2'])
