@@ -39,28 +39,32 @@ class TestDemo(object):
         ws.send(json.dumps(data))
         # 设置的循环次数
         n = 10
-        while n > 0:
-            result = ws.recv()
-            if eval(result).get("action") == "update":
-                # receiveTimestampNs = eval(result)["data"]["receiveTimestampNs"]
-                # sendTimestampNs = eval(result)["data"]["sendTimestampNs"]
-                timestamp = eval(result)["data"]["timestamp"]
-                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
-                # sendTime_resTime = sendTimestampNs - receiveTimestampNs
-                system_time = get_now_time(data="ms")
-                create_time = get_now_time(data="now")
-                gwl = eval(result)["data"]["gwl"]
-                qel = eval(result)["data"]["qel"]
-                sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                      "(exchange, channel, symbol, exchangeTimestamp," \
-                      " timestamp, system_time, create_time, gwl ,qel" \
-                      "   ) " \
-                      "VALUES('1001', 'book',  '{}'," \
-                      " '{}','{}' ,'{}', '{}','{}','{}')".format(symbol, exchangeTimestamp, timestamp,
-                                                                 system_time, create_time, gwl, qel)
+        try:
+            while n > 0:
+                result = ws.recv()
+                if eval(result).get("event") == None:
+                    # receiveTimestampNs = eval(result)["data"]["receiveTimestampNs"]
+                    # sendTimestampNs = eval(result)["data"]["sendTimestampNs"]
+                    timestamp = eval(result)["data"]["timestamp"]
+                    exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
+                    # sendTime_resTime = sendTimestampNs - receiveTimestampNs
+                    system_time = get_now_time(data="ms")
+                    create_time = get_now_time(data="now")
+                    gwl = eval(result)["data"]["gwl"]
+                    qel = eval(result)["data"]["qel"]
+                    sql = "INSERT INTO ltp_lat_monitor.trade_test " \
+                          "(exchange, channel, symbol, exchangeTimestamp," \
+                          " timestamp, system_time, create_time, gwl ,qel" \
+                          "   ) " \
+                          "VALUES('1001', 'book',  '{}'," \
+                          " '{}','{}' ,'{}', '{}','{}','{}')".format(symbol, exchangeTimestamp, timestamp,
+                                                                     system_time, create_time, gwl, qel)
 
-                db_trade.find_one(sql)
-                n = n - 1
+                    db_trade.find_one(sql)
+                    n = n - 1
+        except Exception as e:
+            logger.debug(e)
+            logger.debug("{}数据没有找到".format(symbol))
 
     @pytest.mark.parametrize('symbol ', li_01)
     def test_02(self, symbol):
@@ -82,22 +86,26 @@ class TestDemo(object):
         ws.send(json.dumps(data))
         # 设置的循环次数
         n = 10
-        while n > 0:
-            result = ws.recv()
-            if eval(result).get("event") == None:
-                system_time = get_now_time(data="ms")
-                create_time = get_now_time(data="now")
-                gwl = eval(result)["data"]["gwl"]
-                qel = eval(result)["data"]["qel"]
-                sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                      "( exchange, channel, symbol, system_time, create_time" \
-                      "  ,gwl,qel) " \
-                      "VALUES('1001' , 'bbo',  '{}'," \
-                      " '{}', '{}','{}','{}');". \
-                    format(symbol, system_time, create_time, gwl, qel)
+        try:
+            while n > 0:
+                result = ws.recv()
+                if eval(result).get("event") == None:
+                    system_time = get_now_time(data="ms")
+                    create_time = get_now_time(data="now")
+                    gwl = eval(result)["data"]["gwl"]
+                    qel = eval(result)["data"]["qel"]
+                    sql = "INSERT INTO ltp_lat_monitor.trade_test " \
+                          "( exchange, channel, symbol, system_time, create_time" \
+                          "  ,gwl,qel) " \
+                          "VALUES('1001' , 'bbo',  '{}'," \
+                          " '{}', '{}','{}','{}');". \
+                        format(symbol, system_time, create_time, gwl, qel)
 
-                db_trade.find_one(sql)
-                n = n - 1
+                    db_trade.find_one(sql)
+                    n = n - 1
+        except Exception as e:
+            logger.debug(e)
+            logger.debug("{}数据没有找到".format(symbol))
 
     @pytest.mark.parametrize('symbol ', li_01)
     def test_03(self, symbol):
@@ -119,27 +127,31 @@ class TestDemo(object):
         ws.send(json.dumps(data))
         # 设置的循环次数
         n = 10
-        while n > 0:
-            result = ws.recv()
-            if eval(result).get("event") == None:
-                # receiveTimestampNs = eval(result).get("data").get("receiveTimestampNs")
-                # sendTimestampNs = eval(result).get("data").get("sendTimestampNs")
-                tradeTime = eval(result).get("data").get("tradeTime")
-                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
-                # sendTime_resTime = sendTimestampNs - receiveTimestampNs
-                system_time = get_now_time(data="ms")
-                create_time = get_now_time(data="now")
-                gwl = eval(result)["data"]["gwl"]
-                qel = eval(result)["data"]["qel"]
+        try:
+            while n > 0:
+                result = ws.recv()
+                if eval(result).get("event") == None:
+                    # receiveTimestampNs = eval(result).get("data").get("receiveTimestampNs")
+                    # sendTimestampNs = eval(result).get("data").get("sendTimestampNs")
+                    tradeTime = eval(result).get("data").get("tradeTime")
+                    exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
+                    # sendTime_resTime = sendTimestampNs - receiveTimestampNs
+                    system_time = get_now_time(data="ms")
+                    create_time = get_now_time(data="now")
+                    gwl = eval(result)["data"]["gwl"]
+                    qel = eval(result)["data"]["qel"]
 
-                sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                      "( exchange, channel, symbol, exchangeTimestamp ,system_time, create_time," \
-                      "    tradeTime,gwl,qel) " \
-                      "VALUES('1001' , 'trades',  '{}', '{}','{}'," \
-                      " '{}', '{}', '{}','{}');". \
-                    format(symbol, exchangeTimestamp, system_time, create_time, tradeTime, gwl, qel)
-                db_trade.find_one(sql)
-                n = n - 1
+                    sql = "INSERT INTO ltp_lat_monitor.trade_test " \
+                          "( exchange, channel, symbol, exchangeTimestamp ,system_time, create_time," \
+                          "    tradeTime,gwl,qel) " \
+                          "VALUES('1001' , 'trades',  '{}', '{}','{}'," \
+                          " '{}', '{}', '{}','{}');". \
+                        format(symbol, exchangeTimestamp, system_time, create_time, tradeTime, gwl, qel)
+                    db_trade.find_one(sql)
+                    n = n - 1
+        except Exception as e:
+            logger.debug(e)
+            logger.debug("{}数据没有找到".format(symbol))
 
     @pytest.mark.parametrize('symbol', li_02)
     def test_04(self, symbol):
@@ -161,27 +173,31 @@ class TestDemo(object):
         ws.send(json.dumps(data))
         # 设置的循环次数
         n = 10
-        while n > 0:
-            result = ws.recv()
-            if eval(result).get("event") == None:
-                # receiveTimestampNs = eval(result)["data"]["receiveTimestampNs"]
-                # sendTimestampNs = eval(result)["data"]["sendTimestampNs"]
-                timestamp = eval(result)["data"]["timestamp"]
-                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
-                # sendTime_resTime = sendTimestampNs - receiveTimestampNs
-                system_time = get_now_time(data="ms")
-                create_time = get_now_time(data="now")
-                gwl = eval(result)["data"]["gwl"]
-                qel = eval(result)["data"]["qel"]
-                sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                      "(exchange, channel, symbol, exchangeTimestamp," \
-                      " timestamp, system_time, create_time, gwl ,qel" \
-                      "   ) " \
-                      "VALUES('1000', 'book',  '{}'," \
-                      " '{}','{}' ,'{}', '{}','{}','{}')".format(symbol, exchangeTimestamp, timestamp,
-                                                                 system_time, create_time, gwl, qel)
-                db_trade.find_one(sql)
-                n = n - 1
+        try:
+            while n > 0:
+                result = ws.recv()
+                if eval(result).get("event") == None:
+                    # receiveTimestampNs = eval(result)["data"]["receiveTimestampNs"]
+                    # sendTimestampNs = eval(result)["data"]["sendTimestampNs"]
+                    timestamp = eval(result)["data"]["timestamp"]
+                    exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
+                    # sendTime_resTime = sendTimestampNs - receiveTimestampNs
+                    system_time = get_now_time(data="ms")
+                    create_time = get_now_time(data="now")
+                    gwl = eval(result)["data"]["gwl"]
+                    qel = eval(result)["data"]["qel"]
+                    sql = "INSERT INTO ltp_lat_monitor.trade_test " \
+                          "(exchange, channel, symbol, exchangeTimestamp," \
+                          " timestamp, system_time, create_time, gwl ,qel" \
+                          "   ) " \
+                          "VALUES('1000', 'book',  '{}'," \
+                          " '{}','{}' ,'{}', '{}','{}','{}')".format(symbol, exchangeTimestamp, timestamp,
+                                                                     system_time, create_time, gwl, qel)
+                    db_trade.find_one(sql)
+                    n = n - 1
+        except Exception as e:
+            logger.debug(e)
+            logger.debug("{}数据没有找到".format(symbol))
 
     @pytest.mark.parametrize('symbol', li_02)
     def test_05(self, symbol):
@@ -203,24 +219,28 @@ class TestDemo(object):
         ws.send(json.dumps(data))
         # 设置的循环次数
         n = 10
-        while n > 0:
-            result = ws.recv()
-            logger.info("返回结果是：{}".format(result))
-            if eval(result).get("event") == None:
-                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
-                system_time = get_now_time(data="ms")
-                create_time = get_now_time(data="now")
-                gwl = eval(result)["data"]["gwl"]
-                qel = eval(result)["data"]["qel"]
-                sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                      "(exchange, channel, symbol, exchangeTimestamp," \
-                      " system_time, create_time, gwl ,qel" \
-                      "   ) " \
-                      "VALUES('1000', 'bbo',  '{}'," \
-                      " '{}','{}' , '{}','{}','{}')".format(symbol, exchangeTimestamp,
-                                                            system_time, create_time, gwl, qel)
-                db_trade.find_one(sql)
-                n = n - 1
+        try:
+            while n > 0:
+                result = ws.recv()
+                logger.info("返回结果是：{}".format(result))
+                if eval(result).get("event") == None:
+                    exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
+                    system_time = get_now_time(data="ms")
+                    create_time = get_now_time(data="now")
+                    gwl = eval(result)["data"]["gwl"]
+                    qel = eval(result)["data"]["qel"]
+                    sql = "INSERT INTO ltp_lat_monitor.trade_test " \
+                          "(exchange, channel, symbol, exchangeTimestamp," \
+                          " system_time, create_time, gwl ,qel" \
+                          "   ) " \
+                          "VALUES('1000', 'bbo',  '{}'," \
+                          " '{}','{}' , '{}','{}','{}')".format(symbol, exchangeTimestamp,
+                                                                system_time, create_time, gwl, qel)
+                    db_trade.find_one(sql)
+                    n = n - 1
+        except Exception as e:
+            logger.debug(e)
+            logger.debug("{}数据没有找到".format(symbol))
 
     @pytest.mark.parametrize('symbol', li_02)
     def test_06(self, symbol):
@@ -242,24 +262,29 @@ class TestDemo(object):
         ws.send(json.dumps(data))
         # 设置的循环次数
         n = 10
-        while n > 0:
-            result = ws.recv()
-            if eval(result).get("event") == None:
-                exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
-                system_time = get_now_time(data="ms")
-                create_time = get_now_time(data="now")
-                gwl = eval(result)["data"]["gwl"]
-                qel = eval(result)["data"]["qel"]
-                sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                      "(exchange, channel, symbol, exchangeTimestamp," \
-                      "  system_time, create_time, gwl ,qel" \
-                      "   ) " \
-                      "VALUES('1000', 'trades',  '{}'," \
-                      " '{}','{}' ,'{}', '{}','{}')" \
-                    .format(symbol, exchangeTimestamp, system_time, create_time, gwl, qel)
-                db_trade.find_one(sql)
-                n = n - 1
+        try:
+            while n > 0:
+                result = ws.recv()
+                if eval(result).get("event") == None:
+                    exchangeTimestamp = eval(result)["data"]["exchangeTimestamp"]
+                    system_time = get_now_time(data="ms")
+                    create_time = get_now_time(data="now")
+                    gwl = eval(result)["data"]["gwl"]
+                    qel = eval(result)["data"]["qel"]
+                    sql = "INSERT INTO ltp_lat_monitor.trade_test " \
+                          "(exchange, channel, symbol, exchangeTimestamp," \
+                          "  system_time, create_time, gwl ,qel" \
+                          "   ) " \
+                          "VALUES('1000', 'trades',  '{}'," \
+                          " '{}','{}' ,'{}', '{}','{}')" \
+                        .format(symbol, exchangeTimestamp, system_time, create_time, gwl, qel)
+                    db_trade.find_one(sql)
+                    n = n - 1
+        except Exception as e:
+            logger.debug(e)
+            logger.debug("{}数据没有找到".format(symbol))
 
 
 if __name__ == '__main__':
-    pytest.main(['--reruns', '2'])
+    # pytest.main(['--reruns', '2'])
+    pytest.main()
