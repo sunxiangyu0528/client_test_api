@@ -188,14 +188,14 @@ class OKX(Base):
         sign = base64.b64encode(mac)
         return ts, sign
 
-    def send_subscribe(self, op="subscribe", channel="books-l2-tbt", instId="BTC_USDT"):
+    def send_subscribe(self, op="subscribe", channel="books-l2-tbt", instId="ETH_USDT"):
         instId = self.translate(instId)
         subscribe = json.dumps({
             "op": f"{op}",
             "args": [
                 {
                     "channel": f"{channel}",
-                    "instId": f"{self.mp.get(instId)}"
+                    "instId": f"{instId}"
                 }
             ]
         })

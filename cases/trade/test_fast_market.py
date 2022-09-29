@@ -51,7 +51,7 @@ def test_okx_01():
     assert numpy.median(ans) <= 3
 
 
-@pytest.mark.parametrize('n', [1])
+@pytest.mark.parametrize('n', [2])
 @pytest.mark.tags("manual", "smoke")
 def test_okx_02(n):
     """
@@ -59,12 +59,11 @@ def test_okx_02(n):
     logic: 并发订阅，观察稳定性
     exception:
     """
-    for i in range(n-1):
-        LTP(exchange="1001", symbol="BTC_USDT", debug=False).start()
+    dq1 = []
+    for i in range(n - 1):
+        LTP(exchange="1001", symbol="BTC_USDT", share_dq=dq1, debug=False).start()
 
     LTP(exchange="1001", symbol="BTC_USDT").start()
-    while True:
-        pass
 
 
 @pytest.mark.parametrize(['exchange', "symbol"], [("1001", "BTC_USDT"), ("1001", "ETH_USDT")])
@@ -110,14 +109,14 @@ def test_okx_03(exchange, symbol):
 @pytest.mark.parametrize(['exchange', "symbol"], [("1000", "BTC_USDT"), ("1000", "ETH_USDT")])
 def test_bn_01(exchange, symbol):
     """
-    author: alex
+    author: alex and Andre
     logic: 校验binance 500组数据正确性
     """
 
     dq1 = list()
     dq2 = list()
-    ltp = LTP(exchange=exchange, symbol=symbol, share_dq=dq1, debug=False)
-    ex = BN(symbol=symbol, share_dq=dq2, debug=False)
+    ltp = LTP(exchange=exchange, symbol=symbol, share_dq=dq1)
+    ex = BN(symbol=symbol, share_dq=dq2)
     ex.start()
     time.sleep(1)
     ltp.start()
@@ -131,7 +130,7 @@ def test_bn_01(exchange, symbol):
 
     ltp_data = dq1.pop(0)
     ex_data = dq2.pop(0)
-    check = Check(ex_name="OKX")
+    check = Check(ex_name="BN")
     while True:
         if check.is_equals(ltp_data, ex_data):
             break
@@ -152,12 +151,3 @@ def test_bn_01(exchange, symbol):
                 print(f"ex_data: {ex_data}")
                 print(f"ltp_data: {ltp_data}")
                 assert False
-def test_bn_02():
-
-    ltp = LTP(exchange="1000", symbol="BTC_USDT")
-    ltp.start()
-    manual_step("kkkkkkkkk")
-    # ltp.send_unsubscribe()
-    # ltp.send_subscribe()
-    while 1:
-        pass
