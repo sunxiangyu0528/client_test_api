@@ -34,15 +34,7 @@ class TestReConnect(object):
                 logger.debug("正在尝试第{}次重连".format(reconnect_count))
                 print("正在尝试第{}次重连".format(reconnect_count))
                 time.sleep(3)
-                subscribe = {
-                    "args": {
-                        "exchange": "1001",
-                        "symbol": "XRP_USDT",
-                        "channel": "trades"
-                    },
-                    "op": "subscribe"
-                }
-                ws.send(json.dumps(subscribe))
+                on_open(ws)
                 logger.debug("重新连接的时间为：{}".format(datetime.datetime.now()))
                 print("重新连接的时间为：{}".format(datetime.datetime.now()))
                 reconnect_count += 1

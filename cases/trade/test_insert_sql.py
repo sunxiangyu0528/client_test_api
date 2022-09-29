@@ -53,10 +53,10 @@ class TestDemo(object):
                     gwl = eval(result)["data"]["gwl"]
                     qel = eval(result)["data"]["qel"]
                     sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                          "(exchange, channel, symbol, exchangeTimestamp," \
+                          "(exchange, channel,location,is_oversea,is_colo ,symbol, exchangeTimestamp," \
                           " timestamp, system_time, create_time, gwl ,qel" \
                           "   ) " \
-                          "VALUES('1001', 'book',  '{}'," \
+                          "VALUES('1001', 'book','测试区域','false','true' , '{}'," \
                           " '{}','{}' ,'{}', '{}','{}','{}')".format(symbol, exchangeTimestamp, timestamp,
                                                                      system_time, create_time, gwl, qel)
 
@@ -95,9 +95,9 @@ class TestDemo(object):
                     gwl = eval(result)["data"]["gwl"]
                     qel = eval(result)["data"]["qel"]
                     sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                          "( exchange, channel, symbol, system_time, create_time" \
+                          "( exchange, channel,location,is_oversea,is_colo, symbol, system_time, create_time" \
                           "  ,gwl,qel) " \
-                          "VALUES('1001' , 'bbo',  '{}'," \
+                          "VALUES('1001' , 'bbo','测试区域','false','true',  '{}'," \
                           " '{}', '{}','{}','{}');". \
                         format(symbol, system_time, create_time, gwl, qel)
 
@@ -142,9 +142,9 @@ class TestDemo(object):
                     qel = eval(result)["data"]["qel"]
 
                     sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                          "( exchange, channel, symbol, exchangeTimestamp ,system_time, create_time," \
+                          "( exchange, channel,location,is_oversea,is_colo, symbol, exchangeTimestamp ,system_time, create_time," \
                           "    tradeTime,gwl,qel) " \
-                          "VALUES('1001' , 'trades',  '{}', '{}','{}'," \
+                          "VALUES('1001' , 'trades','测试区域','false','true',  '{}', '{}','{}'," \
                           " '{}', '{}', '{}','{}');". \
                         format(symbol, exchangeTimestamp, system_time, create_time, tradeTime, gwl, qel)
                     db_trade.find_one(sql)
@@ -187,10 +187,10 @@ class TestDemo(object):
                     gwl = eval(result)["data"]["gwl"]
                     qel = eval(result)["data"]["qel"]
                     sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                          "(exchange, channel, symbol, exchangeTimestamp," \
+                          "(exchange, channel,location,is_oversea,is_colo, symbol, exchangeTimestamp," \
                           " timestamp, system_time, create_time, gwl ,qel" \
                           "   ) " \
-                          "VALUES('1000', 'book',  '{}'," \
+                          "VALUES('1000', 'book','测试区域','true','true',  '{}'," \
                           " '{}','{}' ,'{}', '{}','{}','{}')".format(symbol, exchangeTimestamp, timestamp,
                                                                      system_time, create_time, gwl, qel)
                     db_trade.find_one(sql)
@@ -230,10 +230,10 @@ class TestDemo(object):
                     gwl = eval(result)["data"]["gwl"]
                     qel = eval(result)["data"]["qel"]
                     sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                          "(exchange, channel, symbol, exchangeTimestamp," \
+                          "(exchange, channel,location,is_oversea,is_colo, symbol, exchangeTimestamp," \
                           " system_time, create_time, gwl ,qel" \
                           "   ) " \
-                          "VALUES('1000', 'bbo',  '{}'," \
+                          "VALUES('1000', 'bbo','测试区域','true','true',  '{}'," \
                           " '{}','{}' , '{}','{}','{}')".format(symbol, exchangeTimestamp,
                                                                 system_time, create_time, gwl, qel)
                     db_trade.find_one(sql)
@@ -272,10 +272,10 @@ class TestDemo(object):
                     gwl = eval(result)["data"]["gwl"]
                     qel = eval(result)["data"]["qel"]
                     sql = "INSERT INTO ltp_lat_monitor.trade_test " \
-                          "(exchange, channel, symbol, exchangeTimestamp," \
+                          "(exchange, channel,location,is_oversea,is_colo, symbol, exchangeTimestamp," \
                           "  system_time, create_time, gwl ,qel" \
                           "   ) " \
-                          "VALUES('1000', 'trades',  '{}'," \
+                          "VALUES('1000', 'trades','测试区域','true','true',  '{}'," \
                           " '{}','{}' ,'{}', '{}','{}')" \
                         .format(symbol, exchangeTimestamp, system_time, create_time, gwl, qel)
                     db_trade.find_one(sql)
