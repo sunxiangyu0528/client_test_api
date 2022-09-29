@@ -42,7 +42,8 @@ class TestReConnect(object):
                     print("reconnect_count小于100")
 
             else:
-                print("其他error!")
+                print("其他error!,也重连！")
+                on_open(ws)
                 logger.debug("其他error!")
 
         def on_open(ws):
